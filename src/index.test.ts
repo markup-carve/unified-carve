@@ -113,8 +113,11 @@ test('an included file reaches mdast through the include resolver', () => {
   const files: Record<string, string> = { 'part.crv': 'Included *text*.\n' }
   const resolver = ({ path }: { path: string }) =>
     Object.hasOwn(files, path) ? { text: files[path]!, id: path } : { error: 'not_found' as const }
-  const tree = toMdast(parse('{{ part.crv }}\n', { includes: resolver }), { sections: false })
+  const source = '{{ part.crv }}\n'
+  const tree = toMdast(parse(source, { includes: resolver, positions: true }), { sections: false, source })
   assert.deepEqual(types(tree), ['root', 'paragraph', 'text', 'strong', 'text', 'text'])
+  // Offsets of an included file are not offsets of the including source.
+  assert.equal(tree.children[0]!.position?.start.offset, undefined)
 })
 
 function types(tree: Root): string[] {

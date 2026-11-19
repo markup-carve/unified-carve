@@ -53,7 +53,7 @@ interface Context {
   sections: boolean
   rawHtml: boolean
   policy: UrlPolicy | undefined
-  offsets: ((byte: number) => number) | undefined
+  offsets: ((byte: number) => number | undefined) | undefined
   admonitionCount: number
   insideLink: boolean
   suppressAbbreviation: boolean
@@ -173,7 +173,7 @@ function topLevel(node: TopLevel, ctx: Context): MdNode[] {
 // ---------------------------------------------------------------------------
 
 /** A map from UTF-8 byte offsets to string offsets of `source`. */
-function byteOffsets(source: string): (byte: number) => number {
+function byteOffsets(source: string): (byte: number) => number | undefined {
   const encoder = new TextEncoder()
   const map = new Map<number, number>()
   let bytes = 0
@@ -185,7 +185,7 @@ function byteOffsets(source: string): (byte: number) => number {
     at += units
   }
   map.set(bytes, source.length)
-  return (byte) => map.get(byte) ?? byte
+  return (byte) => map.get(byte)
 }
 
 function toPosition(pos: CarvePosition | undefined, ctx: Context): Position | undefined {
@@ -194,9 +194,14 @@ function toPosition(pos: CarvePosition | undefined, ctx: Context): Position | un
     start: { line: pos.startLine, column: pos.startColumn },
     end: { line: pos.endLine, column: pos.endColumn },
   }
-  if (ctx.offsets) {
-    position.start.offset = ctx.offsets(pos.startOffset)
-    position.end.offset = ctx.offsets(pos.endOffset)
+  // A position in an included file counts bytes of that file, which the map does not cover.
+  if (ctx.offsets && pos.file === undefined) {
+    const start = ctx.offsets(pos.startOffset)
+    const end = ctx.offsets(pos.endOffset)
+    if (start !== undefined && end !== undefined) {
+      position.start.offset = start
+      position.end.offset = end
+    }
   }
   return position
 }
