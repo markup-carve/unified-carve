@@ -17,3 +17,13 @@ entry of their own.
 - A `sections` option, on by default, that wraps top-level headings in
   `carveSection` nodes as carve-js renders them.
 - Tested against `@markup-carve/carve` 0.1.15.
+
+### Changed
+
+- Ported to Carve 0.2: the plugin reads the carve-js 0.2 tree (AST contract
+  2.0) and follows its HTML. The engine is pinned to the carve-js `next2`
+  branch by commit until 0.2 is published.
+- Raw HTML is escaped unless the new `rawHtml` option is on, as in carve-js 0.2.
+- New `urlPolicy` option, the carve-js URL policy for link and image
+  destinations.
+- mdast offsets are string offsets; carve-js 0.2 positions count UTF-8 bytes.

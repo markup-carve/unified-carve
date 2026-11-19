@@ -1,4 +1,4 @@
-import { carveToHtml } from '@markup-carve/carve'
+import { render } from '@markup-carve/carve'
 import type { Element, ElementContent, Root, RootContent } from 'hast'
 import { fromHtml } from 'hast-util-from-html'
 import { normalizeUri } from 'micromark-util-sanitize-uri'
@@ -167,6 +167,6 @@ export function viaUnified(source: string, options?: Options): string {
   )
 }
 
-export function viaCarve(source: string, sections = true): string {
-  return carveToHtml(source, sections ? {} : { sections: false })
+export function viaCarve(source: string, options: Options = {}): string {
+  return render(source, { sections: options.sections !== false, rawHtml: options.rawHtml === true })
 }
