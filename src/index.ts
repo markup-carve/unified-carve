@@ -1,11 +1,10 @@
-import { parse, resolve } from '@markup-carve/carve'
 import type { Root } from 'mdast'
 import type { Plugin } from 'unified'
-import { toMdast, type ToMdastOptions } from './to-mdast.js'
+import { carveToMdast, type ToMdastOptions } from './to-mdast.js'
 
 export { carveToMdast, toMdast, type ToMdastOptions } from './to-mdast.js'
 
-export type Options = ToMdastOptions
+export type Options = Omit<ToMdastOptions, 'source'>
 
 /**
  * unified parser plugin: Carve source to mdast, through the carve-js AST.
@@ -14,7 +13,7 @@ export type Options = ToMdastOptions
  * and `data.hProperties` make remark-rehype render carve-js's HTML.
  */
 export const carveParse: Plugin<[(Options | undefined)?], string, Root> = function (options) {
-  this.parser = (document) => toMdast(resolve(parse(String(document), { positions: true })), options ?? {})
+  this.parser = (document) => carveToMdast(String(document), options ?? {})
 }
 
 export default carveParse
