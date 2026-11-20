@@ -16,7 +16,7 @@ entry of their own.
   processor.
 - A `sections` option, on by default, that wraps top-level headings in
   `carveSection` nodes as carve-js renders them.
-- Tested against `@markup-carve/carve` 0.1.15.
+- Engine: carve-js `next2` at `eb2ffc1`, the Milestone 6 engine.
 
 ### Changed
 
