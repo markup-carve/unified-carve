@@ -32,7 +32,7 @@ interface MdNode {
   type: string
   children?: MdNode[]
   value?: string
-  data?: { hName?: string; hProperties?: Record<string, unknown> }
+  data?: { hName?: string; hProperties?: Record<string, unknown>; carveInlineNote?: boolean }
   position?: Position
   [key: string]: unknown
 }
@@ -80,7 +80,7 @@ export function fromMdastWithDiagnostics(root: Root): FromMdastResult {
   const ctx: Context = { diagnostics: [], places: new Map(), definitions: [], abbreviations: new Map(), inlineNotes: new Map() }
   const nodes = root.children as unknown as MdNode[]
   for (const node of nodes) {
-    if (node.type === 'footnoteDefinition' && String(node['identifier']).startsWith('carve-inline-')) {
+    if (node.type === 'footnoteDefinition' && node.data?.carveInlineNote === true) {
       ctx.inlineNotes.set(String(node['identifier']), node.children ?? [])
     }
   }

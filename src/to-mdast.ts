@@ -52,7 +52,7 @@ interface MdNode {
   type: string
   children?: MdNode[]
   value?: string
-  data?: { hName?: string; hProperties?: Properties; hChildren?: unknown[] }
+  data?: { hName?: string; hProperties?: Properties; hChildren?: unknown[]; carveInlineNote?: boolean }
   position?: Position
   [key: string]: unknown
 }
@@ -932,7 +932,10 @@ function footnoteDefinitions(ctx: Context): MdNode[] {
     const children = within(ctx, 'insideLink', false, () => inlineBody
       ? [{ type: 'paragraph', children: inlines(inlineBody, ctx) }]
       : convertBlocks(ctx.footnoteDefs.get(identifier) ?? [], ctx))
-    out.push({ type: 'footnoteDefinition', identifier, label: identifier, children })
+    const definition: MdNode = { type: 'footnoteDefinition', identifier, label: identifier, children }
+    // Marks the notes `inline_footnote` produced, which `fromMdast` writes back inline.
+    if (inlineBody) definition.data = { carveInlineNote: true }
+    out.push(definition)
   }
   return out
 }

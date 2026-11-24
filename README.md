@@ -84,7 +84,7 @@ carve-js renders. Source positions are kept wherever the Carve AST has them.
 | `image`                                              | `image`                                                                          |
 | `table` with one header row and no spans or caption  | `table`, `tableRow`, `tableCell` (`align` per column)                            |
 | other `table`                                        | `carveTable`, `carveTableCaption`, `carveTableSection`, `carveTableRow`, `carveTableCell` |
-| `footnote_ref`, `inline_footnote`, `footnote`        | `footnoteReference`, `footnoteDefinition`                                        |
+| `footnote_ref`, `inline_footnote`, `footnote`        | `footnoteReference`, `footnoteDefinition` (`data.carveInlineNote` on the definition of an inline note) |
 | `thematic_break`                                     | `thematicBreak`                                                                  |
 | `hard_break`                                         | `break`                                                                          |
 | `raw_inline`, `raw_block` for `html` with `rawHtml`  | `html`                                                                           |

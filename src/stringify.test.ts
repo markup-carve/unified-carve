@@ -26,6 +26,11 @@ for (const sections of [true, false]) {
   }
 }
 
+test('an authored note whose label looks generated stays a note', () => {
+  const source = 'x^[inline] y[^carve-inline-1]\n\n[^carve-inline-1]: authored\n'
+  assert.equal(mdastToCarve(carveToMdast(source)), source)
+})
+
 test('carveParse and carveStringify process a document end to end', () => {
   const file = unified().use(carveParse).use(carveStringify).processSync('= Title\n\nSome /em/ and *strong*.\n')
   assert.equal(String(file), '= Title\n\nSome /em/ and *strong*.\n')
