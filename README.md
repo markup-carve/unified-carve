@@ -1,8 +1,9 @@
 # unified-carve
 
-A [unified](https://unifiedjs.com) parser plugin for [Carve](https://github.com/markup-carve/carve).
-It turns Carve source into [mdast](https://github.com/syntax-tree/mdast), so a
-Carve document can go through remark and rehype plugins.
+[unified](https://unifiedjs.com) plugins for [Carve](https://github.com/markup-carve/carve).
+`carveParse` turns Carve source into [mdast](https://github.com/syntax-tree/mdast), so a
+Carve document can go through remark and rehype plugins; `carveStringify`
+writes mdast back as Carve.
 
 Parsing is done by the Carve 0.2 engine, [`@markup-carve/carve`](https://github.com/markup-carve/carve-js).
 The plugin converts the engine's resolved tree (AST contract 2.0) to mdast; it
@@ -109,6 +110,46 @@ carve-js renders. Source positions are kept wherever the Carve AST has them.
 equation number). TypeScript types for the custom nodes are exported and added
 to mdast's content maps.
 
+## Writing Carve
+
+`carveStringify` is the compiler side: mdast to the Carve tree, then
+carve-js's `write`. It inverts every mapping of the table above, so the
+`carve*` nodes of `carveParse` come back as the constructs they came from, and
+it reads plain remark mdast (`linkReference` with `definition`, `html`,
+`math`, `inlineMath`, `yaml`, `toml`) too.
+
+```js
+import { unified } from 'unified'
+import { carveParse, carveStringify } from '@markup-carve/unified-carve'
+
+const file = await unified()
+  .use(carveParse)
+  .use(carveStringify)
+  .process('= Hello\n\n/Hello/, *Carve*.\n')
+
+console.log(String(file))
+// = Hello
+//
+// /Hello/, *Carve*.
+```
+
+Without a processor, `mdastToCarve(root, options)` returns the source and
+`mdastToCarveWithDiagnostics(root, options)` returns `{ source, diagnostics }`.
+`fromMdast(root)` returns the Carve tree itself, and
+`fromMdastWithDiagnostics(root)` returns `{ document, diagnostics }`. The one
+option is `alignTables`, which pads table columns as carve-js `write` does.
+
+A node with no Carve counterpart (a remark directive, for example) is left out
+and reported as an `mdast-unmapped` warning, followed by any loss the writer
+reports. `carveStringify` turns each entry into a message on the file, placed
+at the mdast node when it has a position.
+
+The round trip `carveParse` then `carveStringify` renders the same HTML as the
+input for the feature demo and every test case, with and without sections. The
+source is not kept byte for byte: the writer's canonical spelling replaces the
+author's, ids a heading generates anyway are not written, comments are gone,
+and caption numbers come back as the numbers they rendered.
+
 ## Differences from carve-js HTML
 
 The tests render real documents both ways and compare the HTML, ignoring
@@ -148,14 +189,7 @@ fallback blocks.
 
 ## Not included
 
-There is no `carveStringify` (mdast to Carve) yet. Going through Markdown and
-carve-js's Markdown importer would drop every `carve*` node and re-read
-Markdown ambiguities, so it cannot round-trip. The sound route is mdast to the
-Carve tree and then carve-js's `write`, which needs an inverse for every
-mapping above plus a place to keep fields that only shape HTML (task states,
-list markers, table spans). That is planned as its own change.
-
-There is no rehype plugin either: the HTML side is plain remark-rehype.
+There is no rehype plugin: the HTML side is plain remark-rehype.
 
 ## Development
 
