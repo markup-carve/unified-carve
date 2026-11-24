@@ -5,6 +5,8 @@ import {
   type CaptionNode,
   type DocumentNode,
   type Inline,
+  type IncludeConfig,
+  type IncludeResolver,
   type Position as CarvePosition,
   type TableCellNode,
   type TableNode,
@@ -32,6 +34,12 @@ export interface ToMdastOptions {
   /** The carve-js URL policy; a denied destination is written as the empty string. */
   urlPolicy?: UrlPolicy
   /**
+   * The carve-js `includes` option, a resolver or an `IncludeConfig`, passed to
+   * `parse` by `carveToMdast` and the plugin. `toMdast` reads a tree that is
+   * already parsed and ignores it.
+   */
+  includes?: IncludeConfig | IncludeResolver
+  /**
    * The source the tree was parsed from. Carve positions count UTF-8 bytes;
    * with the source, mdast offsets are string offsets. Without it, positions
    * carry lines and columns only.
@@ -44,7 +52,7 @@ interface MdNode {
   type: string
   children?: MdNode[]
   value?: string
-  data?: { hName?: string; hProperties?: Properties; hChildren?: unknown[] }
+  data?: { hName?: string; hProperties?: Properties; hChildren?: unknown[]; carveInlineNote?: boolean }
   position?: Position
   [key: string]: unknown
 }
@@ -123,7 +131,8 @@ export function toMdast(doc: DocumentNode, options: ToMdastOptions = {}): Root {
 
 /** Parse Carve source with carve-js and convert it to mdast. */
 export function carveToMdast(source: string, options: ToMdastOptions = {}): Root {
-  return toMdast(parse(source, { positions: true }), { ...options, source })
+  const includes = options.includes === undefined ? {} : { includes: options.includes }
+  return toMdast(parse(source, { positions: true, ...includes }), { ...options, source })
 }
 
 function collectTargets(nodes: readonly unknown[], ctx: Context): void {
@@ -923,7 +932,10 @@ function footnoteDefinitions(ctx: Context): MdNode[] {
     const children = within(ctx, 'insideLink', false, () => inlineBody
       ? [{ type: 'paragraph', children: inlines(inlineBody, ctx) }]
       : convertBlocks(ctx.footnoteDefs.get(identifier) ?? [], ctx))
-    out.push({ type: 'footnoteDefinition', identifier, label: identifier, children })
+    const definition: MdNode = { type: 'footnoteDefinition', identifier, label: identifier, children }
+    // Marks the notes `inline_footnote` produced, which `fromMdast` writes back inline.
+    if (inlineBody) definition.data = { carveInlineNote: true }
+    out.push(definition)
   }
   return out
 }
