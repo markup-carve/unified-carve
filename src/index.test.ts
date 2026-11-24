@@ -120,6 +120,37 @@ test('an included file reaches mdast through the include resolver', () => {
   assert.equal(tree.children[0]!.position?.start.offset, undefined)
 })
 
+const partResolver = ({ path }: { path: string }) =>
+  path === 'part.crv'
+    ? { text: 'Included text.\n\nSecond *part*.\n', id: path }
+    : { error: 'not_found' as const }
+
+test('carveToMdast expands includes through the includes option', () => {
+  const tree = carveToMdast('{{ part.crv }}\n', { includes: partResolver, sections: false })
+  const first = tree.children[0]!
+  assert.ok(first.type === 'paragraph')
+  assert.deepEqual(first.children, [
+    { type: 'text', value: 'Included text.', position: { start: { line: 1, column: 1 }, end: { line: 1, column: 15 } } },
+  ])
+})
+
+test('the plugin passes an IncludeConfig to the parse and renders as carve-js does', () => {
+  const includes = { resolver: partResolver, file: 'main.crv' }
+  assert.equal(
+    canonicalHtml(viaUnified('Intro.\n\n{{ part.crv }}\n\nOutro.\n', { includes })),
+    canonicalHtml(viaCarve('Intro.\n\n{{ part.crv }}\n\nOutro.\n', { includes })),
+  )
+})
+
+test('included nodes keep lines and columns of their file and main-source offsets after the include', () => {
+  const tree = carveToMdast('{{ part.crv }}\n\nOutro.\n', { includes: partResolver, sections: false })
+  const [included, second, outro] = tree.children
+  assert.deepEqual(included!.position, { start: { line: 1, column: 1 }, end: { line: 1, column: 15 } })
+  assert.equal(second!.position?.start.line, 3)
+  assert.equal(second!.position?.start.offset, undefined)
+  assert.deepEqual(outro!.position?.start, { line: 3, column: 1, offset: 16 })
+})
+
 function types(tree: Root): string[] {
   const out: string[] = []
   const walk = (node: { type: string; children?: unknown[] }) => {

@@ -168,5 +168,6 @@ export function viaUnified(source: string, options?: Options): string {
 }
 
 export function viaCarve(source: string, options: Options = {}): string {
-  return render(source, { sections: options.sections !== false, rawHtml: options.rawHtml === true })
+  const includes = options.includes === undefined ? {} : { includes: options.includes }
+  return render(source, { sections: options.sections !== false, rawHtml: options.rawHtml === true, ...includes })
 }

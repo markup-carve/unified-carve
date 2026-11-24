@@ -5,6 +5,8 @@ import {
   type CaptionNode,
   type DocumentNode,
   type Inline,
+  type IncludeConfig,
+  type IncludeResolver,
   type Position as CarvePosition,
   type TableCellNode,
   type TableNode,
@@ -31,6 +33,12 @@ export interface ToMdastOptions {
   rawHtml?: boolean
   /** The carve-js URL policy; a denied destination is written as the empty string. */
   urlPolicy?: UrlPolicy
+  /**
+   * The carve-js `includes` option, a resolver or an `IncludeConfig`, passed to
+   * `parse` by `carveToMdast` and the plugin. `toMdast` reads a tree that is
+   * already parsed and ignores it.
+   */
+  includes?: IncludeConfig | IncludeResolver
   /**
    * The source the tree was parsed from. Carve positions count UTF-8 bytes;
    * with the source, mdast offsets are string offsets. Without it, positions
@@ -123,7 +131,8 @@ export function toMdast(doc: DocumentNode, options: ToMdastOptions = {}): Root {
 
 /** Parse Carve source with carve-js and convert it to mdast. */
 export function carveToMdast(source: string, options: ToMdastOptions = {}): Root {
-  return toMdast(parse(source, { positions: true }), { ...options, source })
+  const includes = options.includes === undefined ? {} : { includes: options.includes }
+  return toMdast(parse(source, { positions: true, ...includes }), { ...options, source })
 }
 
 function collectTargets(nodes: readonly unknown[], ctx: Context): void {

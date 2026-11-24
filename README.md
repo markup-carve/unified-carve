@@ -53,6 +53,11 @@ To get the tree without a processor, use `carveToMdast(source, options)`, or
 - `urlPolicy` (default: carve-js's deny list): the carve-js URL policy,
   `{ deny: [...] }` or `{ allow: [...] }`. A denied link or image destination
   is written as the empty string.
+- `includes` (`carveToMdast` and the plugin): the carve-js `includes` option,
+  a resolver or an `IncludeConfig` (`{ resolver, file, depth, bytes }`),
+  passed to the parse so include directives expand. Included nodes keep the
+  lines and columns of their own file and carry no offsets. `toMdast` reads a
+  tree that is already parsed and ignores it.
 - `source` (`toMdast` only): the source the tree was parsed from. Carve
   positions count UTF-8 bytes; with the source, mdast offsets are string
   offsets. `carveToMdast` and the plugin pass it themselves.
@@ -124,8 +129,9 @@ the other 28 fall into these known differences:
 - **A tight list item with a second block** loses that block's `<p>` (12
   examples): remark-rehype unwraps every paragraph of a tight item, carve-js
   only the first.
-- **An include directive without an include resolver** renders nothing;
-  carve-js writes its source as a paragraph (7 examples).
+- **An include directive when no `includes` option is given** renders
+  nothing; carve-js writes its source as a paragraph (7 examples). With
+  `includes`, both expand it the same way.
 - **A footnote reference inside link text** renders as a nested link.
 - **The `::: footnotes` placement directive** renders as a plain directive;
   the notes stay at the end.
