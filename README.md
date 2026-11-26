@@ -9,8 +9,8 @@ Parsing is done by the Carve 0.2 engine, [`@markup-carve/carve`](https://github.
 The plugin converts the engine's resolved tree (AST contract 2.0) to mdast; it
 does not render HTML and parse it back.
 
-This `next2` line targets Carve 0.2. The engine has no 0.2 npm release yet, so
-`package.json` pins the carve-js `next2` branch by commit; npm builds it from
+The `main` branch targets Carve 0.2. The engine has no 0.2 npm release yet, so
+`package.json` pins a carve-js `main` commit; npm builds it from
 git on install.
 
 The package is not published to npm yet.
