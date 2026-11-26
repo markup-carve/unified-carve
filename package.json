@@ -2,7 +2,7 @@
   "name": "@markup-carve/unified-carve",
   "version": "0.1.0",
   "type": "module",
-  "description": "unified parser plugin that turns Carve documents into mdast",
+  "description": "unified plugins between Carve documents and mdast",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@markup-carve/carve": "^0.1.15",
+    "@markup-carve/carve": "github:markup-carve/carve-js#078dcb39c6e2c5de797e01dbc0c92cf9d039c1ed",
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
     "property-information": "^7.2.0",
